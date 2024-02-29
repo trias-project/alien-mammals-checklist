@@ -36,7 +36,7 @@ The data is maintained in [this Google Spreadsheet](https://docs.google.com/spre
 Read the relevant worksheet (published as csv):
 
 ```{r read_source_data}
-input_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTpIbZpKCr25l-1PuUuSP8Jk191uwZtTXy5HvXJ7P8ZCPNDitkicpQhwKmnfymeo9ERV2n6pbsrOWQG/pub?gid=0&single=true&output=csv")
+input_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTpIbZpKCr25l-1PuUuSP8Jk191uwZtTXy5HvXJ7P8ZCPNDitkicpQhwKmnfymeo9ERV2n6pbsrOWQG/pub?gid=0&single=true&output=csv", col_types = cols(.default = "c"))
 ```
 
 Copy the source data to the repository to keep track of changes:
@@ -254,6 +254,15 @@ distribution %<>% mutate(dwc_occurrenceStatus = occurrence_status)
 distribution %<>% mutate(dwc_establishmentMeans = "introduced")
 ```
 
+
+### degreeOfEstablishment
+
+```{r}
+distribution %<>% mutate(dwc_degreeOfEstablishment = degree_of_establishment) 
+```
+
+### pathway
+
 ### eventDate
 
 Information for `eventDate` is contained in `date_first_observation` and `date_last_observation`, which we will express here in an ISO 8601 date format `yyyy/yyyy` (`start_date/end_date`).
@@ -265,14 +274,210 @@ distribution %>%
   group_by(date_first_observation, date_last_observation) %>%
   count()
 ```
+Not all cells for `date_first_observation` and/or `date_last_observation` are populated. So, we used the following rules (`YP` = year of (re)publication of the checklist) for those records: 
 
-### degreeOfEstablishment
+***case 1.*** If `DFO` is empty and `DLO` is empty, `eventDate` is `YP/YP` 
+***case 2.***  If `DFO` is empty and `DLO` is not empty: take `date_last_observation` as `date_first_observation`, eventDate = `DLO/DLO`
+***case 3.*** If `DFO` is not empty and `DLO` is empty, take `YP` as `DLO`, so eventDate is `DFO/YP`
+
+Define `current_year`
+
+```{r}
+year_publication <- format(Sys.Date(), "%Y")
+```
 
 
+```{r}
+distribution %<>% mutate(dwc_eventDate = case_when(
+  is.na(date_first_observation) & is.na(date_last_observation) ~ paste(year_publication, year_publication, sep = "/"),
+  is.na(date_first_observation) & !is.na(date_last_observation) ~ paste(date_last_observation, date_last_observation, sep = "/"),
+  !is.na(date_first_observation) & is.na(date_last_observation) ~ paste(date_first_observation, year_publication, sep = "/"),
+  !is.na(date_first_observation) & !is.na(date_last_observation) ~ paste(date_first_observation, date_last_observation, sep = "/")
+  ))
 
+```
 
+Check mapping:
 
+```{r}
+distribution %>%
+  group_by(date_first_observation, date_last_observation, dwc_eventDate) %>%
+  count()
+```
 
+### source
 
+```{r}
+distribution %<>% mutate(dwc_source = source) 
+```
 
+### occurrenceRemarks
 
+```{r}
+distribution %<>% mutate(dwc_occurrenceRemarks = remarks) 
+```
+
+## Species profile extension
+
+In this extension we will express broad habitat characteristics of the species (e.g. `isTerrestrial`) from `realm`.
+
+Create a dataframe with unique taxa only (ignoring multiple distribution rows):
+
+```{r}
+species_profile <- input_data %>% distinct(taxon_id, .keep_all = TRUE)
+```
+
+Only keep records for which `realm` is not empty:
+
+```{r}
+species_profile %<>% filter(!is.na(realm))
+```
+
+Inspect values:
+
+```{r}
+species_profile %>%
+  group_by(realm) %>%
+  count()
+```
+
+Map the data to [Species Profile](http://rs.gbif.org/extension/gbif/1.0/speciesprofile.xml).
+
+### taxonID
+
+```{r}
+species_profile %<>% mutate(dwc_taxonID = taxon_id)
+```
+
+### isMarine
+
+```{r}
+species_profile %<>% mutate(dwc_isMarine = "FALSE") 
+```
+
+### isFreshwater
+
+```{r}
+species_profile %<>% mutate(dwc_isFreshwater = case_when(
+  realm == "freshwater" ~ "TRUE",
+  TRUE ~ "FALSE"
+)) 
+```
+
+### isTerrestrial
+
+```{r}
+species_profile %<>% mutate(dwc_isTerrestrial = case_when(
+  realm == "terrestrial" ~ "TRUE",
+  TRUE ~ "FALSE"
+))
+```
+
+Show mapped values:
+
+```{r}
+species_profile %>%
+  select(realm, dwc_isMarine, dwc_isFreshwater, dwc_isTerrestrial) %>%
+  group_by_all() %>%
+  summarize(records = n())
+```
+## Description extension
+
+In the description extension we want to include the species' native range. We will express native range information from `native_range`, separated and gathered.
+
+Create a dataframe with unique taxa only (ignoring multiple distribution rows):
+
+```{r}
+native_range <- input_data %>% distinct(taxon_id, .keep_all = TRUE)
+```
+
+Separate values on `|` in a maximum of 4 columns:
+
+```{r}
+native_range %<>% separate(
+  native_range,
+  into = paste0("range_", c(1:4)),
+  sep = " \\| ",
+  extra = "drop"
+)
+```
+
+Gather and trim values:
+
+```{r}
+native_range %<>% gather(key, value, starts_with("range_"), na.rm = TRUE) %>%
+  mutate(value = str_trim(value))
+```
+
+Inspect values:
+
+```{r}
+native_range %>%
+  group_by(value) %>%
+  count()
+```
+
+Clean native range information in `value` somewhat:
+
+```{r}
+native_range %<>% 
+  mutate(value = str_remove_all(value, "\\?")) %>%  # Remove question
+  mutate(value = str_to_title(value))
+```
+
+Map values:
+
+```{r}
+native_range %<>% mutate(mapped_value = recode(value,
+  "Africa"                 = "Africa (WGSRPD:2)",
+  "Australa"               = "Australia (WGSRPD:50)",
+  "Canary Islands"         = "Canary Islands (WGSRPD:21_CNY)",
+  "Central America"        = "Central America (WGSRPD:80)",
+  "China"                  = "China (WGSRPD:36)",
+  "Costa Rica"             = "Costa Rica (WGSRPD:80_COS)",
+  "Cyprus"                 = "Cyprus (WGSRPD:34_CYP)",
+  "East Africa"            = "Eastern Africa",
+  "East Asia"              = "Eastern Asia (WGSRPD:38)",
+  "Europe"                 = "Europe (WGSRPD:1)",
+  "Hawaï"                  = "Hawaii (WGSRPD:63_HAW)",
+  "Japan"                  = "Japan (WGSRPD:38_JAP)",
+  "Mexico"                 = "Mexico (WGSRPD:79)",
+  "New Zealand"            = "New Zealand (WGSRPD:51)",
+  "North Amercia"          = "Northern America (WGSRPD:7)",
+  "South America"          = "Southern America (WGSRPD:8)",
+  "Southeastern Europe"    = "Southeastern Europe (WGSRPD:13)",
+  "Southern Africa "       = "Southern Africa (WGSRPD:27)",
+  "Tasmania"               = "Tasmania (WGSRPD:50_TAS)",
+  "Vietnam"                = "Vietnam (WGSRPD:41_VIE)",
+# .default                 = "",
+  .missing                 = ""
+))
+```
+
+Inspect mapped values:
+
+```{r}
+native_range %>%
+  group_by(value, mapped_value) %>%
+  count()
+```
+
+Drop `key` and `value` column and rename `mapped value`:
+
+```{r}
+native_range %<>% 
+  select(-key, -value) %>% 
+  rename(description = mapped_value)
+```
+
+Keep only non-empty descriptions:
+
+```{r}
+native_range %<>% filter(!is.na(description) & description != "")
+```
+
+Create a `type` field to indicate the type of description:
+
+```{r}
+native_range %<>% mutate(type = "native range")
+```
