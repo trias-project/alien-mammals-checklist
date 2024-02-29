@@ -195,3 +195,84 @@ taxon %<>% mutate(dwc_taxonRank = taxon_rank)
 ```{r}
 taxon %<>% mutate(dwc_nomenclaturalCode = nomenclatural_code)
 ```
+
+## Distribution extension
+
+Create a dataframe with all data (including multiple distributions):
+
+```{r}
+distribution <- input_data
+```
+
+Map the data to [Species Distribution](http://rs.gbif.org/extension/gbif/1.0/distribution.xml).
+
+### taxonID
+
+```{r}
+distribution %<>% mutate(dwc_taxonID = taxon_id) 
+```
+
+### locationID
+
+Currently map for Belgian regions only:
+
+```{r}
+distribution %<>% mutate(dwc_locationID = case_when(
+  location == "Flanders" ~ "ISO_3166-2:BE-VLG",
+  location == "Wallonia" ~ "ISO_3166-2:BE-WAL",
+  location == "Brussels" ~ "ISO_3166-2:BE-BRU"
+))
+```
+
+### locality
+
+Currently map for Belgian regions only:
+
+```{r}
+distribution %<>% mutate(dwc_locality = case_when(
+  location == "Flanders" ~ "Flemish Region",
+  location == "Wallonia" ~ "Walloon Region",
+  location == "Brussels" ~ "Brussels-Capital Region"
+))
+```
+
+### countryCode
+
+```{r}
+distribution %<>% mutate(dwc_countryCode = "BE")
+```
+
+### occurrenceStatus
+
+```{r}
+distribution %<>% mutate(dwc_occurrenceStatus = occurrence_status)
+```
+
+### establishmentMeans
+
+```{r}
+distribution %<>% mutate(dwc_establishmentMeans = "introduced")
+```
+
+### eventDate
+
+Information for `eventDate` is contained in `date_first_observation` and `date_last_observation`, which we will express here in an ISO 8601 date format `yyyy/yyyy` (`start_date/end_date`).
+
+Inspect `data_first_observation` and `date_last_observation`:
+
+```{r}
+distribution %>%
+  group_by(date_first_observation, date_last_observation) %>%
+  count()
+```
+
+### degreeOfEstablishment
+
+
+
+
+
+
+
+
+
