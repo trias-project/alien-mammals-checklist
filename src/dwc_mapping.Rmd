@@ -37,7 +37,7 @@ The data is maintained in [this Google Spreadsheet](https://docs.google.com/spre
 Read the relevant worksheet (published as csv):
 
 ```{r read_source_data}
-input_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTpIbZpKCr25l-1PuUuSP8Jk191uwZtTXy5HvXJ7P8ZCPNDitkicpQhwKmnfymeo9ERV2n6pbsrOWQG/pub?gid=0&single=true&output=csv", col_types = cols(.default = "c"))
+input_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTl8IEk2fProQorMu5xKQPdMXl3OQp-c0f6eBXitv0BiVFZ3JSJCde0PtbFXuETgguf6vK8b43FDX1C/pub?gid=1170691366&single=true&output=csv", col_types = cols(.default = "c"))
 ```
 
 Copy the source data to the repository to keep track of changes:
@@ -100,22 +100,29 @@ taxon <-
   input_data %>%
   distinct(taxon_id, .keep_all = TRUE) %>%
   mutate(
-    dwc_language = "en",
-    dwc_license = "http://creativecommons.org/publicdomain/zero/1.0/",
-    dwc_rightsHolder = "INBO",
-    dwc_accessRights = "https://www.inbo.be/en/norms-data-use",
-    dwc_datasetID = "https://doi.org/10.1016/j.tree.2011.03.023",
-    dwc_institutionCode = "INBO",
-    dwc_datasetName = "Checklist of alien mammals of Belgium",
-    dwc_taxonID = taxon_id,
-    dwc_scientificName = scientific_name,
-    dwc_kingdom = kingdom,
-    dwc_phylum = phylum,
-    dwc_order = order,
-    dwc_family = family,
-    dwc_genus = genus,
-    dwc_taxonRank = taxon_rank,
-    dwc_nomenclaturalCode = nomenclatural_code
+    language = "en",
+    license = "http://creativecommons.org/publicdomain/zero/1.0/",
+    rightsHolder = "INBO",
+    accessRights = "https://www.inbo.be/en/norms-data-use",
+    datasetID = "https://doi.org/10.1016/j.tree.2011.03.023",
+    institutionCode = "INBO",
+    datasetName = "Checklist of alien mammals of Belgium",
+    taxonID = taxon_id,
+    scientificName = scientific_name,
+    kingdom = kingdom,
+    phylum = phylum,
+    order = order,
+    family = family,
+    genus = genus,
+    taxonRank = taxon_rank,
+    nomenclaturalCode = nomenclatural_code,
+    .keep = "none"
+  ) %>% 
+  arrange(taxonID) %>% 
+  select(
+    "language", "license", "rightsHolder", "accessRights", "datasetID",
+    "institutionCode", "datasetName", "taxonID", "scientificName", "kingdom", 
+    "phylum", "order", "family", "genus", "taxonRank", "nomenclaturalCode"
   )
 ```
 
@@ -169,7 +176,7 @@ distribution <-
       !is.na(date_first_observation) & !is.na(date_last_observation) ~ paste(date_first_observation, date_last_observation, sep = "/")
     ),
     dwc_source = source,
-    dwc_occurrenceRemarks = remarks
+    dwc_occurrenceRemarks = occurrence_remarks
   )
 ```
 
@@ -192,14 +199,19 @@ Only keep records for which `realm` is not empty.
 species_profile <-
   input_data %>%
   distinct(taxon_id, .keep_all = TRUE) %>% 
-  filter(!is.na(realm))
+  filter(
+    !is.na(terrestrial) |
+      !is.na(marine) |
+      !is.na(freshwater) |
+      !is.na(estuarine)
+  )
 ```
 
 Inspect values:
 
 ```{r}
 species_profile %>%
-  group_by(realm) %>%
+  group_by(terrestrial, marine, freshwater, estuarine) %>%
   count()
 ```
 
@@ -211,17 +223,10 @@ Map the data to [Species Profile](http://rs.gbif.org/extension/gbif/1.0/speciesp
 species_profile %<>%
   mutate(
     dwc_taxonID = taxon_id,
-    dwc_isMarine = "FALSE",
-    dwc_isFreshwater =
-      case_when(
-        realm == "freshwater" ~ "TRUE",
-        TRUE ~ "FALSE"
-      ),
-    dwc_isTerrestrial =
-      case_when(
-        realm == "terrestrial" ~ "TRUE",
-        TRUE ~ "FALSE"
-      )
+    dwc_isMarine = marine,
+    dwc_isFreshwater = freshwater,
+    dwc_isTerrestrial = terrestrial #,
+    # dwc_isEstuarine = estuarine
   )
 ```
 
@@ -229,7 +234,7 @@ Show mapped values:
 
 ```{r}
 species_profile %>%
-  select(realm, dwc_isMarine, dwc_isFreshwater, dwc_isTerrestrial) %>%
+  select(dwc_isMarine, dwc_isFreshwater, dwc_isTerrestrial) %>%
   group_by_all() %>%
   summarize(records = n())
 ```
@@ -278,7 +283,6 @@ description %<>%
 Only keep the Darwin Core columns:
 
 ```{r}
-taxon %<>% select(starts_with("dwc_"))
 distribution %<>% select(starts_with("dwc_"))
 species_profile %<>% select(starts_with("dwc_"))
 description %<>% select(starts_with("dwc_"))
@@ -287,7 +291,6 @@ description %<>% select(starts_with("dwc_"))
 Drop the `dwc_` prefix:
 
 ```{r}
-colnames(taxon) <- str_remove(colnames(taxon), "dwc_")
 colnames(distribution) <- str_remove(colnames(distribution), "dwc_")
 colnames(species_profile) <- str_remove(colnames(species_profile), "dwc_")
 colnames(description) <- str_remove(colnames(description), "dwc_")
@@ -296,7 +299,6 @@ colnames(description) <- str_remove(colnames(description), "dwc_")
 Sort on `taxonID` (to maintain some consistency between updates of the dataset):
 
 ```{r}
-taxon %<>% arrange(taxonID)
 distribution %<>% arrange(taxonID)
 species_profile %<>% arrange(taxonID)
 description %<>% arrange(taxonID)
