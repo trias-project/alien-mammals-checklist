@@ -165,9 +165,9 @@ distribution <-
       location == "Wallonia" ~ "Walloon Region",
       location == "Brussels" ~ "Brussels-Capital Region"
     ),
-    dwc_countryCode = "BE",
+    dwc_countryCode = country_code,
     dwc_occurrenceStatus = occurrence_status,
-    dwc_establishmentMeans = "introduced",
+    dwc_establishmentMeans = establishment_means,
     dwc_degreeOfEstablishment = degree_of_establishment,
     dwc_eventDate = case_when(
       is.na(date_first_observation) & is.na(date_last_observation) ~ paste(year_publication, year_publication, sep = "/"),
