@@ -167,6 +167,8 @@ In this extension we will express broad habitat characteristics of the species (
 Create a dataframe with unique taxa only (ignoring multiple distribution rows).
 Only keep records for which `realm` is not empty.
 
+Map the data to [Species Profile](http://rs.gbif.org/extension/gbif/1.0/speciesprofile.xml).
+
 ```{r}
 species_profile <-
   input_data %>%
@@ -175,15 +177,7 @@ species_profile <-
     !is.na(terrestrial) |
       !is.na(marine) |
       !is.na(freshwater)
-  )
-```
-
-Map the data to [Species Profile](http://rs.gbif.org/extension/gbif/1.0/speciesprofile.xml).
-
-### taxonID
-
-```{r}
-species_profile %<>%
+  ) %>% 
   mutate(
     .keep = "none",
     taxonID = taxon_id,
