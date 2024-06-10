@@ -46,12 +46,6 @@ Copy the source data to the repository to keep track of changes:
 write_csv(input_data, here("data", "raw", "alien_mammals_checklist_dump.csv"), na = "")
 ```
 
-Preview data: 
-
-```{r}
-input_data %>% head()
-```
-
 # Preprocessing
 
 ## Tidy data
@@ -63,10 +57,6 @@ input_data %<>%
   remove_empty("rows") %>%    # Remove empty rows
   clean_names()               # Have sensible (lowercase) column names
 ```
-
-## Scientific names
-
-No cleaning required.
 
 ## Taxon IDs
 
@@ -80,13 +70,6 @@ input_data %<>% mutate(taxon_id = paste(
   vdigest(paste(scientific_name, kingdom), algo = "md5"),
   sep = ":"
 ))
-```
-
-
-Preview data:
-
-```{r}
-input_data %>% head()
 ```
 
 # Darwin Core mapping
@@ -131,14 +114,6 @@ taxon <-
 Create a dataframe with all data (including multiple distributions). Map the data to [Species Distribution](http://rs.gbif.org/extension/gbif/1.0/distribution.xml).
 
 Information for `eventDate` is contained in `date_first_observation` and `date_last_observation`, which we will express here in an ISO 8601 date format `yyyy/yyyy` (`start_date/end_date`).
-
-Inspect `data_first_observation` and `date_last_observation`:
-
-```{r}
-input_data %>%
-  group_by(date_first_observation, date_last_observation) %>%
-  count()
-```
 
 Not all cells for `date_first_observation` and/or `date_last_observation` are populated. So, we used the following rules (`YP` = year of (re)publication of the checklist) for those records: 
 
@@ -185,14 +160,6 @@ distribution <-
   arrange(taxonID)
 ```
 
-Check mapping of eventDate:
-
-```{r}
-# distribution %>%
-#   group_by(date_first_observation, date_last_observation, dwc_eventDate) %>%
-#   count()
-```
-
 ## Species profile extension
 
 In this extension we will express broad habitat characteristics of the species (e.g. `isTerrestrial`) from `realm`.
@@ -212,14 +179,6 @@ species_profile <-
   )
 ```
 
-Inspect values:
-
-```{r}
-species_profile %>%
-  group_by(terrestrial, marine, freshwater, estuarine) %>%
-  count()
-```
-
 Map the data to [Species Profile](http://rs.gbif.org/extension/gbif/1.0/speciesprofile.xml).
 
 ### taxonID
@@ -237,14 +196,7 @@ species_profile %<>%
   arrange(taxonID)
 ```
 
-Show mapped values:
 
-```{r}
-species_profile %>%
-  select(isMarine, isFreshwater, isTerrestrial) %>%
-  group_by_all() %>%
-  summarize(records = n())
-```
 ## Description extension
 
 In the description extension we want to include the species' native range. We will express native range information from `native_range`, separated and gathered.
@@ -272,29 +224,6 @@ description <-
     language = "en"
     ) %>% 
   arrange(taxonID)
-```
-
-Preview taxon core:
-
-```{r}
-taxon %>% head()
-```
-Preview distribution extension:
-
-```{r}
-distribution %>% head()
-```
-
-Preview species profile extension:
-
-```{r}
-species_profile %>% head()
-```
-
-Preview description extension:
-
-```{r}
-description %>% head(10)
 ```
 
 Save to CSV:
