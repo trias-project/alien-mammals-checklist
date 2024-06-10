@@ -174,8 +174,7 @@ species_profile <-
   filter(
     !is.na(terrestrial) |
       !is.na(marine) |
-      !is.na(freshwater) |
-      !is.na(estuarine)
+      !is.na(freshwater)
   )
 ```
 
@@ -190,12 +189,10 @@ species_profile %<>%
     taxonID = taxon_id,
     isMarine = marine,
     isFreshwater = freshwater,
-    isTerrestrial = terrestrial #,
-    # disEstuarine = estuarine
+    isTerrestrial = terrestrial
   ) %>% 
   arrange(taxonID)
 ```
-
 
 ## Description extension
 
