@@ -115,21 +115,16 @@ Create a dataframe with all data (including multiple distributions). Map the dat
 
 Information for `eventDate` is contained in `date_first_observation` and `date_last_observation`, which we will express here in an ISO 8601 date format `yyyy/yyyy` (`start_date/end_date`).
 
-Not all cells for `date_first_observation` and/or `date_last_observation` are populated. So, we used the following rules (`YP` = year of (re)publication of the checklist) for those records: 
+Not all cells for `date_first_observation` (DFO) and/or `date_last_observation` (DLO) are populated. So, we used the following rules for those records: 
 
-***case 1.*** If `DFO` is empty and `DLO` is empty, `eventDate` is `YP/YP` 
-***case 2.***  If `DFO` is empty and `DLO` is not empty: take `date_last_observation` as `date_first_observation`, eventDate = `DLO/DLO`
-***case 3.*** If `DFO` is not empty and `DLO` is empty, take `YP` as `DLO`, so eventDate is `DFO/YP`
+***case 1.*** If `DFO` is empty and `DLO` is empty, `eventDate` is `NA` 
+***case 2.***  If `DFO` is empty and `DLO` is not empty: eventDate = `/DLO`
+***case 3.*** If `DFO` is not empty and `DLO` is empty, eventDate is `DFO/`
 
 ```{r}
-# define current year
-year_publication <- format(Sys.Date(), "%Y")
-
-# dwc mapping
 distribution <-
   input_data %>%
   mutate(
-    .keep = "none",
     taxonID = taxon_id,
     locationID = case_when(
       location == "Flanders" ~ "ISO_3166-2:BE-VLG",
@@ -146,9 +141,9 @@ distribution <-
     establishmentMeans = establishment_means,
     degreeOfEstablishment = degree_of_establishment,
     eventDate = case_when(
-      is.na(date_first_observation) & is.na(date_last_observation) ~ paste(year_publication, year_publication, sep = "/"),
-      is.na(date_first_observation) & !is.na(date_last_observation) ~ paste(date_last_observation, date_last_observation, sep = "/"),
-      !is.na(date_first_observation) & is.na(date_last_observation) ~ paste(date_first_observation, year_publication, sep = "/"),
+      is.na(date_first_observation) & is.na(date_last_observation) ~ NA,
+      is.na(date_first_observation) & !is.na(date_last_observation) ~ paste0("/", date_last_observation),
+      !is.na(date_first_observation) & is.na(date_last_observation) ~ paste0(date_first_observation, "/"),
       !is.na(date_first_observation) & !is.na(date_last_observation) ~ paste(date_first_observation, date_last_observation, sep = "/")
     ),
     source = source,
