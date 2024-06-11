@@ -119,6 +119,7 @@ Not all cells for `date_first_observation` (DFO) and/or `date_last_observation` 
 ```{r}
 distribution <-
   input_data %>%
+  gather(key, pathway, starts_with("introduction_pathway"), na.rm = TRUE) %>%
   mutate(
     taxonID = taxon_id,
     locationID = case_when(
@@ -145,8 +146,8 @@ distribution <-
     occurrenceRemarks = occurrence_remarks
   ) %>% 
   select("taxonID", "locationID", "locality", "countryCode", "occurrenceStatus",
-         "establishmentMeans", "degreeOfEstablishment", "eventDate", "source",
-         "occurrenceRemarks") %>% 
+         "establishmentMeans", "degreeOfEstablishment", "pathway", "eventDate",
+         "source", "occurrenceRemarks") %>% 
   arrange(taxonID)
 ```
 
