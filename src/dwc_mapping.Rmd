@@ -61,7 +61,7 @@ input_data <-
     taxon_id = paste(
       "alien-mammals-checklist",
       "taxon",
-      vdigest(paste(scientific_name, kingdom), algo = "md5"),
+      .data$taxon_id_hash,
       sep = ":"
     )
   )
