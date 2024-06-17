@@ -188,24 +188,20 @@ Create a dataframe with unique taxa only (ignoring multiple distribution rows). 
 
 ```{r}
 description <-
-  input_data %>%
-  distinct(taxon_id, .keep_all = TRUE) %>%
-  # Separate values on `|` in a maximum of 4 columns:
-  separate(
-    native_range,
-    into = paste0("range_", c(1:4)),
-    sep = " \\| ",
-    extra = "drop"
-    ) %>%
-  # Gather and trim values:
-  gather(key, value, starts_with("range_"), na.rm = TRUE) %>%
+  input_data %>% 
+  # unique taxa only (ignoring multiple distribution rows)
+  distinct(taxon_id, .keep_all = TRUE) %>% 
+  # Separate values on `|` 
+  mutate(native_range = strsplit(native_range, "\\|")) %>% 
+  unnest(native_range) %>% 
   mutate(
     .keep = "none",
     taxonID = taxon_id,
-    description = str_trim(value),
+    description = str_trim(native_range),
     type = "native range",
     language = "en"
     ) %>% 
+  filter(!is.na(description)) %>% 
   arrange(taxonID)
 ```
 
