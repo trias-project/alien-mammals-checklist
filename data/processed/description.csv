@@ -1,6 +1,7 @@
 taxonID,description,type,language
 alien-mammals-checklist:taxon:01af1f92221b8e0fbf2f16d18203dd2b,South Asia,native range,en
 alien-mammals-checklist:taxon:01af1f92221b8e0fbf2f16d18203dd2b,Southeast Asia,native range,en
+alien-mammals-checklist:taxon:08e8f90b6f9c11542d5defc37174b82e,Eastern Europe,native range,en
 alien-mammals-checklist:taxon:26674daaa2dbc0076155a4c1bc9771a3,Asia,native range,en
 alien-mammals-checklist:taxon:275025010e3bea243fa9ce9532ec6d72,North America,native range,en
 alien-mammals-checklist:taxon:27a54674f4afcd6d8dbc893680da5bae,South America,native range,en
@@ -22,7 +23,6 @@ alien-mammals-checklist:taxon:843f33e3e64980d12946fe852b4e0e1e,North America,nat
 alien-mammals-checklist:taxon:86691b2598f39264e9a3bd47e03a6c3b,South America,native range,en
 alien-mammals-checklist:taxon:91806b301f339712be8fbb0475808c4e,Southern Africa,native range,en
 alien-mammals-checklist:taxon:9ff05227e4481f8f997eab5ab232e364,North America,native range,en
-alien-mammals-checklist:taxon:a98fcf96f26fcc2ffad9b12b41c1a45d,Eastern Europe,native range,en
 alien-mammals-checklist:taxon:ae7eec3cf884d2e57367ee05dcba4684,Tasmania,native range,en
 alien-mammals-checklist:taxon:b151e5839b2b692e8d1a0dc3cf0ae6ca,North America,native range,en
 alien-mammals-checklist:taxon:b26fdc638376907d27c4ee9fbb486795,Central Asia,native range,en
