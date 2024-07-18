@@ -2,6 +2,7 @@ taxonID,description,type,language
 alien-mammals-checklist:taxon:01af1f92221b8e0fbf2f16d18203dd2b,South Asia,native range,en
 alien-mammals-checklist:taxon:01af1f92221b8e0fbf2f16d18203dd2b,Southeast Asia,native range,en
 alien-mammals-checklist:taxon:08e8f90b6f9c11542d5defc37174b82e,Eastern Europe,native range,en
+alien-mammals-checklist:taxon:21a4ae3c6b0efff5388594e359c589f1,Asia,native range,en
 alien-mammals-checklist:taxon:26674daaa2dbc0076155a4c1bc9771a3,Asia,native range,en
 alien-mammals-checklist:taxon:275025010e3bea243fa9ce9532ec6d72,North America,native range,en
 alien-mammals-checklist:taxon:27a54674f4afcd6d8dbc893680da5bae,South America,native range,en
@@ -36,6 +37,9 @@ alien-mammals-checklist:taxon:e28aade2a945b4e369eb2406d2268dc3,Southern Africa,n
 alien-mammals-checklist:taxon:e55a4d1859bbd682ddb51b627098defe,Iberia,native range,en
 alien-mammals-checklist:taxon:e55a4d1859bbd682ddb51b627098defe,Northern Africa,native range,en
 alien-mammals-checklist:taxon:ea75f869bf4fef4a9b278a4cca5b17ca,North America,native range,en
+alien-mammals-checklist:taxon:f1f1a32768b381663234cafe4d2dac22,Northern Africa,native range,en
+alien-mammals-checklist:taxon:f1f1a32768b381663234cafe4d2dac22,Western Asia,native range,en
 alien-mammals-checklist:taxon:f32a507f1e44e09fec12f7c1c7b65dec,North America,native range,en
 alien-mammals-checklist:taxon:f7271a35ec4e10840106f492b86e8bb8,North America,native range,en
 alien-mammals-checklist:taxon:f91b4c42b31377b277a8eb1aeef594b5,North America,native range,en
+alien-mammals-checklist:taxon:fcafd1dfa66065b5317cd7f38c31ad47,Northern Africa,native range,en
